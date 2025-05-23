@@ -1,12 +1,12 @@
 # SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding
-This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/.
+This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/abs/2505.17012/.
 
 <div align="center">
    <img src="./dataset.png">
 </div>
 
 ## Some Information
-[Project Page](https://haoningwu3639.github.io/SpatialScore/) $\cdot$ [Paper](https://arxiv.org/) $\cdot$ [Dataset](https://huggingface.co/datasets/haoningwu/SpatialScore)
+[Project Page](https://haoningwu3639.github.io/SpatialScore/) $\cdot$ [Paper](https://arxiv.org/abs/2505.17012/) $\cdot$ [Dataset](https://huggingface.co/datasets/haoningwu/SpatialScore)
 
 ## News
 - [2025.5] Our pre-print paper is released on arXiv.
@@ -36,7 +36,7 @@ If you use this code and data for your research or project, please cite:
 	@article{wu2025spatialscore,
             author    = {Wu, Haoning and Huang, Xiao and Chen, Yaohui and Zhang, Ya and Wang, Yanfeng and Xie, Weidi},
             title     = {SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding},
-            journal   = {arXiv preprint arXiv:2505.xxxx},
+            journal   = {arXiv preprint arXiv:2505.17012},
             year      = {2025},
     }
 
