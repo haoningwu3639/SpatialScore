@@ -1,6 +1,8 @@
 # SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding
 This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/abs/2505.17012/.
 
+We are currently organizing our data and code, and expect to open-source them within 1-2 weeks! Please stay tuned! Feel free to reach out for discussions!
+
 <div align="center">
    <img src="./dataset.png">
 </div>
