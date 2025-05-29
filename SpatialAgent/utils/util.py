@@ -1,29 +1,21 @@
 import os
 import re
 import torch
+import base64
 import matplotlib
 import numpy as np
 import torchvision.transforms as T
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 
-
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
-
-def get_depth_image(image_path, data_root):    
-    task_name, image_name = os.path.dirname(image_path), os.path.basename(image_path)
-    base_name = os.path.splitext(image_name)[0]
-
-    # Check common image extensions
-    for ext in ['png', 'jpg', 'jpeg', 'bmp', 'tiff']:
-        depth_path = os.path.join(data_root, f"{task_name}_d", f"{base_name}.{ext}")
-        if not os.path.exists(depth_path):
-            continue
-            
-        return Image.open(depth_path)
+def image_to_base64_data_uri(file_path):
+    with open(file_path, "rb") as img_file:
+        base64_data = base64.b64encode(img_file.read()).decode('utf-8')
+        return f"data:image/png;base64,{base64_data}"
     
 def process_depth_to_rgb(depth_image):
     # Convert to numpy array
@@ -41,20 +33,7 @@ def process_depth_to_rgb(depth_image):
     
     return rgb_image
 
-def process_depth_to_rgb_spatialbot(depth_image):
-    img_d = np.array(depth_image)
-    height, width = img_d.shape
-    three_channel_array = np.zeros((height, width, 3), dtype=np.uint8)
-
-    # Encode depth values into RGB channels
-    three_channel_array[:, :, 0] = (img_d // 1024) * 4  # Red channel
-    three_channel_array[:, :, 1] = (img_d // 32) * 8  # Green channel
-    three_channel_array[:, :, 2] = (img_d % 32) * 8  # Blue channel
-    
-    depth_rgb_image = Image.fromarray(three_channel_array, 'RGB')
-
-    return depth_rgb_image
-
+# For InternVL, tool functions
 def build_transform(input_size):
     transform = T.Compose([
         T.Lambda(lambda img: img.convert('RGB') if img.mode != 'RGB' else img),
@@ -65,6 +44,7 @@ def build_transform(input_size):
 
     return transform
 
+# For InternVL, tool functions
 def find_closest_aspect_ratio(aspect_ratio, target_ratios, width, height, image_size):
     best_ratio_diff = float('inf')
     best_ratio = (1, 1)
@@ -83,6 +63,7 @@ def find_closest_aspect_ratio(aspect_ratio, target_ratios, width, height, image_
 
     return best_ratio
 
+# For InternVL, tool functions
 def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbnail=False):
     orig_width, orig_height = image.size
     aspect_ratio = orig_width / orig_height
@@ -124,7 +105,7 @@ def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbna
 
     return processed_images
 
-# load image for internvl
+# For InternVL, tool functions
 def load_image(image_file, input_size=448, max_num=12):
     image = Image.open(image_file).convert('RGB')
     transform = build_transform(input_size=input_size)
@@ -133,6 +114,7 @@ def load_image(image_file, input_size=448, max_num=12):
 
     return pixel_values
 
+# Result Parsing Functions
 def extract_number(text: str) -> str:
     """Extract a number from text, handling digits and word representations.
     
@@ -195,6 +177,7 @@ def extract_number(text: str) -> str:
     # Return original cleaned text if no number found
     return clean_text
 
+# Result Parsing Functions
 def extract_yes_no(text: str) -> str:
     """Extract yes/no response from text.
     
@@ -239,6 +222,7 @@ def extract_yes_no(text: str) -> str:
     
     return clean_text
 
+# Result Parsing Functions
 def extract_option(text: str) -> str:
     """Extract a multiple-choice option (A-F) from text."""
     # Handle direct option responses
@@ -294,13 +278,13 @@ def extract_option(text: str) -> str:
     
     return clean_text
 
-def extract_numeric_with_unit(text, gt_value=None, gt_unit=None, tolerance=2.0):
-    """Extract numeric value with unit from text and compare with ground truth if provided.
+# Result Parsing Functions
+def extract_numeric_with_unit(pred, gt=None, tolerance=2.0):
+    """Extract numeric value with unit from predicted text and compare with ground truth if provided.
     
     Args:
-        text (str): Input text that may contain a numeric value with unit
-        gt_value (float, optional): Ground truth value for comparison
-        gt_unit (str, optional): Ground truth unit for conversion
+        pred (str): Input text that may contain a numeric value with unit
+        gt (str, optional): Ground truth string in format "value unit" (e.g., "5 meters")
         tolerance (float, optional): Ratio tolerance for comparison
         
     Returns:
@@ -309,20 +293,40 @@ def extract_numeric_with_unit(text, gt_value=None, gt_unit=None, tolerance=2.0):
     # Initialize return dictionary
     result = {"value": None, "unit": None, "is_correct": False}
     
-    # Clean text of special formatting
-    text = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant)>', '', text).strip()
+    # Clean prediction text of special formatting
+    pred = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant)>', '', pred).strip()
     
-    # Extract value - try formal LaTeX style format first
-    value_match = re.search(r'\\scalar\{([^}]+)\}', text)
+    # STEP 1: Extract value with multiple patterns
+    # Try formal LaTeX style format first
+    value_match = re.search(r'\\scalar\{([^}]+)\}', pred)
+    
+    # Try markdown bold format (**2.828 meters**)
     if not value_match:
-        # Try standard formats like "5 meters" or "3.2 cm"
-        value_match = re.search(r'(\d+\.?\d*)\s*(?:[a-zA-Z]+)', text)
+        value_match = re.search(r'\*\*([\d.]+)\s*(?:[a-zA-Z]+)\*\*', pred)
     
-    # Extract unit - try formal LaTeX style format first
-    unit_match = re.search(r'\\distance_unit\{([^}]+)\}', text)
+    # Try final value statement format (approximately **2.828 meters**)
+    if not value_match:
+        value_match = re.search(r'(?:approximately|about|roughly)\s*\**([\d.]+)\s*(?:[a-zA-Z]+)\**', pred, re.IGNORECASE)
+    
+    # Try standard formats like "5 meters" or "3.2 cm"
+    if not value_match:
+        value_match = re.search(r'(\d+\.?\d*)\s*(?:[a-zA-Z]+)', pred)
+    
+    # STEP 2: Extract unit with multiple patterns
+    # Try formal LaTeX style format first
+    unit_match = re.search(r'\\distance_unit\{([^}]+)\}', pred)
+    
+    # Try markdown bold format (**2.828 meters**)
     if not unit_match:
-        # Try to find unit after a number
-        number_unit_match = re.search(r'\d+\.?\d*\s*([a-zA-Z]+)', text)
+        unit_match = re.search(r'\*\*\d+\.?\d*\s*([a-zA-Z]+)\*\*', pred)
+    
+    # Try final value statement format (approximately **2.828 meters**)
+    if not unit_match:
+        unit_match = re.search(r'(?:approximately|about|roughly)\s*\**\d+\.?\d*\s*([a-zA-Z]+)\**', pred, re.IGNORECASE)
+    
+    # Try to find unit after a number
+    if not unit_match:
+        number_unit_match = re.search(r'\d+\.?\d*\s*([a-zA-Z]+)', pred)
         if number_unit_match:
             unit_match = number_unit_match
 
@@ -340,38 +344,44 @@ def extract_numeric_with_unit(text, gt_value=None, gt_unit=None, tolerance=2.0):
         except (IndexError, AttributeError):
             pass
 
-    # If ground truth provided, compare with extracted value
-    if (gt_value is not None and gt_unit is not None and 
-        result["value"] is not None and result["unit"] is not None):
-        
-        # Handle zero values safely
-        if result["value"] == 0 or gt_value == 0:
-            # If both are zero, it's correct; if only one is zero, it's wrong
-            result["is_correct"] = (result["value"] == 0 and gt_value == 0)
-            return result
-            
-        # Convert both values to centimeters for comparison
-        multipliers = {
-            "units": 100, "unit": 100, # MLLM sometimes output unit(s), and thus default to meters
-            "m": 100, "meter": 100, "meters": 100, "metre": 100, "metres": 100,
-            "cm": 1, "centimeter": 1, "centimeters": 1, "mm": 0.1,
-            "ft": 30.48, "foot": 30.48, "feet": 30.48, "in": 2.54, "inch": 2.54, "inches": 2.54
-        }
-        
-        # Get multipliers, defaulting to 1 if unit not found
-        pred_multiplier = multipliers.get(result["unit"], 1)
-        gt_multiplier = multipliers.get(gt_unit.lower(), 1)
-        
-        # Convert to common unit (cm)
-        pred_value_cm = result["value"] * pred_multiplier
-        gt_value_cm = gt_value * gt_multiplier
-        
-        # Check if values are within tolerance ratio
-        try:
-            ratio = max(pred_value_cm / gt_value_cm, gt_value_cm / pred_value_cm)
-            result["is_correct"] = ratio < tolerance
-        except ZeroDivisionError:
-            # This shouldn't happen with the earlier check, but just in case
-            result["is_correct"] = False
+    # If ground truth provided, parse it and compare with extracted value
+    if gt is not None and result["value"] is not None and result["unit"] is not None:
+        # Parse ground truth value and unit from the combined string
+        gt_match = re.search(r'(\d+\.?\d*)\s*([a-zA-Z]+)', gt)
+        if gt_match:
+            try:
+                gt_value = float(gt_match.group(1))
+                gt_unit = gt_match.group(2).lower().strip()
+                
+                # Handle zero values safely
+                if result["value"] == 0 or gt_value == 0:
+                    # If both are zero, it's correct; if only one is zero, it's wrong
+                    result["is_correct"] = (result["value"] == 0 and gt_value == 0)
+                    return result
+                    
+                # Convert both values to centimeters for comparison
+                multipliers = {
+                    "m": 100, "meter": 100, "meters": 100, "metre": 100, "metres": 100,
+                    "cm": 1, "centimeter": 1, "centimeters": 1, "mm": 0.1,
+                    "ft": 30.48, "foot": 30.48, "feet": 30.48, "in": 2.54, "inch": 2.54, "inches": 2.54
+                }
+                
+                # Get multipliers, defaulting to 1 if unit not found
+                pred_multiplier = multipliers.get(result["unit"], 1)
+                gt_multiplier = multipliers.get(gt_unit, 1)
+                
+                # Convert to common unit (cm)
+                pred_value_cm = result["value"] * pred_multiplier
+                gt_value_cm = gt_value * gt_multiplier
+                
+                # Check if values are within tolerance ratio
+                try:
+                    ratio = max(pred_value_cm / gt_value_cm, gt_value_cm / pred_value_cm)
+                    result["is_correct"] = ratio < tolerance
+                except ZeroDivisionError:
+                    # This shouldn't happen with the earlier check, but just in case
+                    result["is_correct"] = False
+            except (IndexError, ValueError):
+                pass
     
     return result
