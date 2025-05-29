@@ -21,7 +21,7 @@ Please stay tuned! Feel free to reach out for discussions!
 - Python >= 3.10 (Recommend to use [Anaconda](https://www.anaconda.com/download/#linux) or [Miniconda](https://docs.conda.io/en/latest/miniconda.html))
 - [PyTorch >= 2.5.1](https://pytorch.org/)
 - accelerate == 1.5.2
-- triton==3.2.0
+- triton == 3.2.0
 - transformers == 4.51.3 (4.49.0 is recommended for Cambrian, SpaceLLaVA, and SpatialBot models)
 
 A suitable [conda](https://conda.io/) environment named `SpatialScore` can be created and activated with:

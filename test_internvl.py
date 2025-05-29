@@ -62,8 +62,6 @@ def generate_response(model, tokenizer_or_processor, model_inputs):
     NUM_BEAMS, TEMPERATURE, MAX_NEW_TOKENS, USE_CACHE = 1, 0.0, 1024, True
     DO_SAMPLE = True if TEMPERATURE > 0 else False
     
-    device = next(model.parameters()).device
-    
     assistant_prompt, image_paths, images, text = model_inputs['assistant_prompt'], model_inputs['img_paths'], model_inputs['images'], model_inputs['question']
 
     with torch.no_grad():
@@ -149,6 +147,7 @@ def main():
 
     # Process items starting from start_idx
     for i, item in enumerate(tqdm(data[start_idx:], desc="Processing SpatialScore items", initial=start_idx, total=len(data))):
+        torch.cuda.empty_cache()
         actual_idx = i + start_idx  # Calculate the actual index in the full dataset
         
         # Skip if this item has already been processed (as a safeguard)
@@ -193,25 +192,32 @@ def main():
                 
                 # Check if both values are extracted successfully
                 if pred_value is not None and gt_value is not None:
-                    if item.get('source') in ['VSI-Bench_8', 'VGBench']:
+                    if item.get('source') == 'VSI-Bench_8':
+                        is_correct = 'accuracy'
                         if pred_value == 0:
-                            is_correct = False
+                            score = 1.0 if gt_value == 0.0 else 0.0
                         else:
-                            ratio = max(pred_value / gt_value, gt_value / pred_value)
-                            is_correct = ratio <= 2.0  # Allow for delta = 2 tolerance
+                            from utils.util import mean_relative_accuracy
+                            score = mean_relative_accuracy(pred_value, gt_value, start=0.5, end=0.95, interval=0.05)
+                            # ratio = max(pred_value / gt_value, gt_value / pred_value)
+                            # is_correct = ratio <= 2.0  # Allow for delta = 2 tolerance
                     else:
-                        is_correct = pred_value == gt_value # Exact match for other datasets
+                        is_correct = pred_value == gt_value # Exact match for other datasets (SpatialBench, RealWorldQA)
         
         # Update counters
-        if is_correct:
+        if is_correct == True:
             total_correct += 1
+            score = 1.0
+        elif is_correct == False:
+            score = 0.0
+
         total_samples += 1
         
         # Create result entry
         result_entry = {
             "id": item.get('id', actual_idx), "category": item.get('category', 'unknown'), "subcategory": item.get('subcategory', 'unknown'),
             "input_modality": item.get('input_modality', 'image'), "question_type": question_type, "source": item.get('source', 'unknown'), 
-            "question": item.get('question', ''), "gt_answer": ground_truth, "pred_answer": results, "img_paths": item.get('img_paths', []), "is_correct": is_correct
+            "question": item.get('question', ''), "gt_answer": ground_truth, "pred_answer": results, "img_paths": item.get('img_paths', []), "is_correct": is_correct, "score": score
         }
         
         # Add to all results
@@ -236,7 +242,7 @@ def main():
                 json.dump(all_results, f, indent=2)
 
         torch.cuda.empty_cache()
-
+        
     # Save all results
     with open(os.path.join(output_dir, "all_results.json"), 'w') as f:
         json.dump(all_results, f, indent=2)
@@ -249,17 +255,18 @@ def main():
         with open(os.path.join(source_dir, f"{source}_results.json"), 'w') as f:
             json.dump(results, f, indent=2)
         
-        # Calculate and save source-level accuracy
-        source_correct = sum(1 for r in results if r['is_correct'])
+        # Calculate and save source-level accuracy using score instead of is_correct
+        source_score_sum = sum(r.get('score', 0.0) for r in results)
+        source_correct = int(source_score_sum)  # Floor the score as requested
         source_total = len(results)
-        source_accuracy = (source_correct / source_total) * 100 if source_total > 0 else 0
+        source_accuracy = (source_score_sum / source_total) * 100 if source_total > 0 else 0
         
         with open(os.path.join(source_dir, f"{source}_summary.json"), 'w') as f:
-            summary = {"source": source, "accuracy": source_accuracy, "correct": source_correct, "total": source_total}
+            summary = {"source": source, "accuracy": source_accuracy, "correct": source_correct, "total": source_total, "score_sum": source_score_sum}
             json.dump(summary, f, indent=2)
         
-        print(f"Source: {source} - Accuracy: {source_accuracy:.2f}% ({source_correct}/{source_total})")
-    
+        print(f"Source: {source} - Accuracy: {source_accuracy:.2f}% ({source_correct}/{source_total}, score: {source_score_sum:.2f})")
+
     # Save results grouped by category
     for category, results in category_results.items():
         category_dir = os.path.join(output_dir, "by_category")
@@ -268,24 +275,28 @@ def main():
         with open(os.path.join(category_dir, f"{category}_results.json"), 'w') as f:
             json.dump(results, f, indent=2)
         
-        # Calculate and save category-level accuracy
-        category_correct = sum(1 for r in results if r['is_correct'])
+        # Calculate and save category-level accuracy using score instead of is_correct
+        category_score_sum = sum(r.get('score', 0.0) for r in results)
+        category_correct = int(category_score_sum)  # Floor the score as requested
         category_total = len(results)
-        category_accuracy = (category_correct / category_total) * 100 if category_total > 0 else 0
+        category_accuracy = (category_score_sum / category_total) * 100 if category_total > 0 else 0
         
         with open(os.path.join(category_dir, f"{category}_summary.json"), 'w') as f:
-            summary = {"category": category, "accuracy": category_accuracy, "correct": category_correct, "total": category_total}
+            summary = {"category": category, "accuracy": category_accuracy, "correct": category_correct, "total": category_total, "score_sum": category_score_sum}
             json.dump(summary, f, indent=2)
         
-        print(f"Category: {category} - Accuracy: {category_accuracy:.2f}% ({category_correct}/{category_total})")
-    
-    # Calculate and save overall accuracy
-    overall_accuracy = (total_correct / total_samples) * 100 if total_samples > 0 else 0
+        print(f"Category: {category} - Accuracy: {category_accuracy:.2f}% ({category_correct}/{category_total}, score: {category_score_sum:.2f})")
+
+    # Calculate and save overall accuracy using score instead of counting is_correct=True
+    total_score_sum = sum(r.get('score', 0.0) for r in all_results)
+    total_correct = int(total_score_sum)  # Floor the score as requested
+    overall_accuracy = (total_score_sum / total_samples) * 100 if total_samples > 0 else 0
+
     with open(os.path.join(output_dir, "overall_summary.json"), 'w') as f:
-        summary = {"accuracy": overall_accuracy, "correct": total_correct, "total": total_samples}
+        summary = {"accuracy": overall_accuracy, "correct": total_correct, "total": total_samples, "score_sum": total_score_sum}
         json.dump(summary, f, indent=2)
-    
-    print(f"Overall Accuracy: {overall_accuracy:.2f}% ({total_correct}/{total_samples})")
+
+    print(f"Overall Accuracy: {overall_accuracy:.2f}% ({total_correct}/{total_samples}, score: {total_score_sum:.2f})")
     print(f"All results saved to {output_dir}")
 
 if __name__ == "__main__":

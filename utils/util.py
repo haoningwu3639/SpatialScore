@@ -385,3 +385,17 @@ def extract_numeric_with_unit(pred, gt=None, tolerance=2.0):
                 pass
     
     return result
+
+# Tool function for VSI-Bench
+def abs_dist_norm(pred: float, target: float) -> float:
+    """For VSI-Bench, calculate normalized absolute distance (relative error)."""
+    return abs(pred - target) / target if target != 0 else float('inf')
+
+# Tool function for VSI-Bench
+def mean_relative_accuracy(pred: float, target: float, start: float, end: float, interval: float) -> float:
+    """For VSI-Bench, calculate Mean Relative Accuracy for open-ended questions."""
+    num_pts = (end - start) / interval + 2
+    conf_intervs = np.linspace(start, end, int(num_pts))
+    accuracy = abs_dist_norm(pred, target) <= 1 - conf_intervs
+    
+    return accuracy.mean()
