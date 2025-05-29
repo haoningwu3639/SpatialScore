@@ -234,7 +234,9 @@ def main():
             # Save all results so far
             with open(os.path.join(output_dir, f"all_results.json"), 'w') as f:
                 json.dump(all_results, f, indent=2)
-                
+
+        torch.cuda.empty_cache()
+
     # Save all results
     with open(os.path.join(output_dir, "all_results.json"), 'w') as f:
         json.dump(all_results, f, indent=2)

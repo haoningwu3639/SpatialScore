@@ -13,7 +13,7 @@ Please stay tuned! Feel free to reach out for discussions!
 [Project Page](https://haoningwu3639.github.io/SpatialScore/) $\cdot$ [Paper](https://arxiv.org/abs/2505.17012/) $\cdot$ [Dataset](https://huggingface.co/datasets/haoningwu/SpatialScore)
 
 ## News
-- [2025.5] We have released code of evaluation with Qwen2.5VL, and will gradually update other scripts.
+- [2025.5] We have released code of evaluation with Qwen2.5VL and InternVL, and will gradually update other scripts.
 - [2025.5] We have released VGBench and SpatialScore, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
 - [2025.5] Our pre-print paper is released on arXiv.
 
