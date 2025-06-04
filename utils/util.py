@@ -8,7 +8,6 @@ import torchvision.transforms as T
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 
-DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IMAGENET_MEAN = (0.485, 0.456, 0.406)
 IMAGENET_STD = (0.229, 0.224, 0.225)
 
@@ -110,7 +109,7 @@ def load_image(image_file, input_size=448, max_num=12):
     image = Image.open(image_file).convert('RGB')
     transform = build_transform(input_size=input_size)
     images = dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
-    pixel_values = torch.stack([transform(img) for img in images]).to(torch.float16).to(DEVICE)
+    pixel_values = torch.stack([transform(img) for img in images]).to(torch.float16)
 
     return pixel_values
 

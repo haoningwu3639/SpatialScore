@@ -19,7 +19,7 @@ torch.manual_seed(SEED)
 
 def load_model_and_components(model_path, model_name="qwen2_5vl-7b"):
     
-    if model_name in ["qwen2_5vl-3b", "qwen2_5vl-7b", "qwen2_5vl-32b", "qwen2_5vl-72b", "spaceqwen-3b"]:
+    if model_name in ["qwen2_5vl-3b", "qwen2_5vl-7b", "qwen2_5vl-32b", "qwen2_5vl-72b", "spaceqwen-3b", "spacethinker-qwen2_5vl-3b", "SpaceR"]:
         # Qwen2.5-VL-7B-Instruct, Qwen2.5-VL-32B-Instruct, Qwen2.5-VL-72B-Instruct, SpaceQwen-3B-Instruct
         model = Qwen2_5_VLForConditionalGeneration.from_pretrained(model_path, device_map="auto", torch_dtype=torch.bfloat16, low_cpu_mem_usage=True, attn_implementation="flash_attention_2")
         tokenizer_or_processor = AutoProcessor.from_pretrained(model_path, use_fast=False, trust_remote_code=True, min_pixels=256*28*28, max_pixels=2560*28*28)
@@ -92,7 +92,7 @@ def generate_response(model, tokenizer_or_processor, model_inputs):
 def main():
     parser = argparse.ArgumentParser(description="SpatialScore Evaluation")
     parser.add_argument('--model_path', type=str, default="./huggingface/Qwen2.5-VL-7B-Instruct")
-    parser.add_argument('--model_name', type=str, default='qwen2_5vl-7b', choices=['qwen2_5vl-3b', 'qwen2_5vl-7b', 'qwen2_5vl-32b', "qwen2_5vl-72b", "spaceqwen-3b"])
+    parser.add_argument('--model_name', type=str, default='qwen2_5vl-7b', choices=['qwen2_5vl-3b', 'qwen2_5vl-7b', 'qwen2_5vl-32b', "qwen2_5vl-72b", "spaceqwen-3b", "spacethinker-qwen2_5vl-3b", "SpaceR"])
     parser.add_argument('--dataset_json_path', type=str, default="./dataset/SpatialScore.json")
     parser.add_argument('--dataset_name', type=str, default="all", choices=['all', 'VGBench', 'cvbench', 'spatialbench', 'MMIU', 'BLINK', '3DSRBench', 'RealWorldQA', 'MMVP', 'QSpatialBench-Plus', 'QSpatialBench-ScanNet', 'VSR-ZeroShot', 'SpatialSense', 'VSI-Bench_8'])
     parser.add_argument('--output_dir', type=str, default="./eval_results")

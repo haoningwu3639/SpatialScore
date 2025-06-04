@@ -3,7 +3,6 @@ import json
 import torch
 import argparse
 from tqdm import tqdm
-
 from transformers import AutoModel, AutoTokenizer
 from utils.util import image_to_base64_data_uri, extract_number, extract_yes_no, extract_option, extract_numeric_with_unit, load_image
 
@@ -61,7 +60,8 @@ def process_model_input(sample):
 def generate_response(model, tokenizer_or_processor, model_inputs):
     NUM_BEAMS, TEMPERATURE, MAX_NEW_TOKENS, USE_CACHE = 1, 0.0, 1024, True
     DO_SAMPLE = True if TEMPERATURE > 0 else False
-    
+    device = next(model.parameters()).device
+
     assistant_prompt, image_paths, images, text = model_inputs['assistant_prompt'], model_inputs['img_paths'], model_inputs['images'], model_inputs['question']
 
     with torch.no_grad():
@@ -71,7 +71,8 @@ def generate_response(model, tokenizer_or_processor, model_inputs):
             input_text = "\n".join([f"Image-{i+1}: <image>" for i in range(len(images))]) + f"\n{assistant_prompt} {text}"
 
         num_patches_list = [image.size(0) for image in images] # Input multi-image separately
-        images = torch.cat(images, dim=0)
+        images = torch.cat(images, dim=0).to(device)  # Concatenate images along batch dimension
+        
         response = model.chat(tokenizer_or_processor, images, input_text, num_patches_list=num_patches_list, history=None, return_history=False,
             generation_config=dict(num_beams=NUM_BEAMS, temperature=TEMPERATURE, max_new_tokens=MAX_NEW_TOKENS, do_sample=DO_SAMPLE),
         )
@@ -147,7 +148,6 @@ def main():
 
     # Process items starting from start_idx
     for i, item in enumerate(tqdm(data[start_idx:], desc="Processing SpatialScore items", initial=start_idx, total=len(data))):
-        torch.cuda.empty_cache()
         actual_idx = i + start_idx  # Calculate the actual index in the full dataset
         
         # Skip if this item has already been processed (as a safeguard)
