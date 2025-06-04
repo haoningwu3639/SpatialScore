@@ -1,11 +1,17 @@
 # SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding
 This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/abs/2505.17012/.
 
-We have open-sourced our VGBench, SpaitalScore, inference code, and expect to gradually open-source the left of them within 1-2 weeks!
+We have open-sourced our VGBench, SpaitalScore, SpatialScore-Hard, inference code, and expect to gradually open-source the left of them within 1-2 weeks!
 Please stay tuned! Feel free to reach out for discussions!
 
 <div align="center">
-   <img src="./dataset.png">
+   <img src="./assets/dataset.png">
+</div>
+
+Current Leaderborad (We will update it regularly, and you are welcome to test your models on SpatialScore!):
+
+<div align="center">
+   <img src="./assets/SpatialScore.png">
 </div>
 
 ## Some Information
@@ -13,7 +19,7 @@ Please stay tuned! Feel free to reach out for discussions!
 
 ## News
 - [2025.5] We have released evaluation code, supporting most mainstream models.
-- [2025.5] We have released VGBench and SpatialScore, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
+- [2025.5] We have released VGBench, SpatialScore and SpatialScore-Hard, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
 - [2025.5] Our pre-print paper is released on arXiv.
 
 ## Requirements
@@ -31,7 +37,7 @@ conda activate SpatialScore
 ```
 
 ## Dataset
-Please check out [SpaitalScore](https://huggingface.co/datasets/haoningwu/SpatialScore) to download our proposed benchmark, including `VGBench` and `SpatialScore`.
+Please check out [SpaitalScore](https://huggingface.co/datasets/haoningwu/SpatialScore) to download our proposed benchmark, including `VGBench` and `SpatialScore` (including `SpatialScore-Hard`).
 
 If you cannot access Huggingface, you can use [hf-mirror](https://hf-mirror.com/) to download models.
 
@@ -81,13 +87,12 @@ If you use this code and data for your research or project, please cite:
 
 ## TODO
 - [x] Release Paper
-- [x] Release Dataset (VGBench, SpatialScore)
+- [x] Release Dataset (VGBench, SpatialScore, SpatialScore-Hard)
 - [x] Release Code of Evaluation with Qwen2.5VL, InternVL, and all-in-one script
 - [x] Release Base Code of SpatialAgent
 - [ ] Release other parsing utils and functions
-- [ ] Release SpatialScore-Hard
-- [ ] Release Code of Data Construction
 - [ ] Release Inference Code of SpatialAgent
+- [ ] Release Code of Data Construction
 
 ## Acknowledgements
 Many thanks to the code bases from [transformers](https://github.com/huggingface/transformers) and [TACO](https://github.com/SalesforceAIResearch/TACO).
