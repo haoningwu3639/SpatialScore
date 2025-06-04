@@ -1,14 +1,14 @@
 # SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding
 This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/abs/2505.17012/.
 
-We have open-sourced our VGBench, SpaitalScore, SpatialScore-Hard, inference code, and expect to gradually open-source the left of them within 1-2 weeks!
+We have open-sourced our VGBench, SpaitalScore, SpatialScore-Hard, inference code, and expect to gradually open-source the rest of them within 1-2 weeks!
 Please stay tuned! Feel free to reach out for discussions!
 
 <div align="center">
    <img src="./assets/dataset.png">
 </div>
 
-Current Leaderborad (We will update it regularly, and you are welcome to test your models on SpatialScore!):
+Current Leaderboard (We will update it regularly, and you are welcome to test your models on SpatialScore!):
 
 <div align="center">
    <img src="./assets/SpatialScore.png">
@@ -19,7 +19,7 @@ Current Leaderborad (We will update it regularly, and you are welcome to test yo
 
 ## News
 - [2025.5] We have released evaluation code, supporting most mainstream models.
-- [2025.5] We have released VGBench, SpatialScore and SpatialScore-Hard, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
+- [2025.5] We have released VGBench, SpatialScore, and SpatialScore-Hard, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
 - [2025.5] Our pre-print paper is released on arXiv.
 
 ## Requirements
@@ -62,7 +62,7 @@ CUDA_VISIBLE_DEVICES=0,1 python test_qwen.py --model_name qwen2_5vl-7b --model_p
 CUDA_VISIBLE_DEVICES=0,1 python test_qwen.py --model_name internvl3-8b --model_path ./huggingface/InternVL3-8B --dataset_json_path ./dataset/SpatialScore.json --dataset_name all --output_dir ./eval_results
 ```
 
-Now, All-in-one script supporting all other models are also available.
+Now, the All-in-one script supporting all other models is also available.
 You can evaluate other models on SpatialScore using the following commands:
 
 ```
