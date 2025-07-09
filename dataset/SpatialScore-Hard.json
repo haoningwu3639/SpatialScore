@@ -7130,7 +7130,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the desk (highlighted by a red box), the books (highlighted by a blue box) or the shelves (highlighted by a green box)?\n(A) books\n(B) shelves\nThe coordinates of bounding boxes are: red: [94.4812774658, 551.223815918, 241.0737457275, 614.1763916016] blue: [680.5616455078, 301.5532836914, 865.1174316406, 357.1839904785] green: [627.6675415039, 401.1194458008, 885.2478637695, 515.9035644531]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the desk (highlighted by a red box), the books (highlighted by a blue box) or the shelves (highlighted by a green box)?\n(A) books\n(B) shelves\nThe coordinates of bounding boxes are: red: [627.6675415039, 401.1194458008, 885.2478637695, 515.9035644531] blue: [94.4812774658, 551.223815918, 241.0737457275, 614.1763916016] green: [680.5616455078, 301.5532836914, 865.1174316406, 357.1839904785]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_hypersim_4.jpg"
@@ -7145,7 +7145,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the desk (highlighted by a red box), the books (highlighted by a blue box) or the shelves (highlighted by a green box)?\n(A) books\n(B) shelves\nThe coordinates of bounding boxes are: red: [88.5310592651, 542.9295654297, 212.788192749, 601.2041625977] blue: [652.7884521484, 291.5539855957, 823.6602172852, 341.819152832] green: [600.8207397461, 388.0758972168, 839.8870239258, 495.7401123047]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the desk (highlighted by a red box), the books (highlighted by a blue box) or the shelves (highlighted by a green box)?\n(A) books\n(B) shelves\nThe coordinates of bounding boxes are: red: [600.8207397461, 388.0758972168, 839.8870239258, 495.7401123047] blue: [88.5310592651, 542.9295654297, 212.788192749, 601.2041625977] green: [652.7884521484, 291.5539855957, 823.6602172852, 341.819152832]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_hypersim_193.jpg"
@@ -7160,7 +7160,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the pedestrian (highlighted by a red box), the truck (highlighted by a blue box) or the traffic cone (highlighted by a green box)?\n(A) truck\n(B) traffic cone\nThe coordinates of bounding boxes are: red: [696.5587158203, 441.2247009277, 768.3233032227, 517.049621582] blue: [210.652053833, 523.4859008789, 232.0204315186, 563.98828125] green: [1273.9498291016, 449.3598632812, 1348.2908935547, 572.5252685547]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the pedestrian (highlighted by a red box), the truck (highlighted by a blue box) or the traffic cone (highlighted by a green box)?\n(A) truck\n(B) traffic cone\nThe coordinates of bounding boxes are: red: [1273.9498291016, 449.3598632812, 1348.2908935547, 572.5252685547] blue: [696.5587158203, 441.2247009277, 768.3233032227, 517.049621582] green: [210.652053833, 523.4859008789, 232.0204315186, 563.98828125]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_8.jpg"
@@ -7175,7 +7175,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the motorcycle (highlighted by a red box), the pedestrian (highlighted by a blue box) or the car (highlighted by a green box)?\n(A) pedestrian\n(B) car\nThe coordinates of bounding boxes are: red: [964.3213500977, 478.2882080078, 977.8887939453, 518.2294921875] blue: [820.9140625, 481.270111084, 1017.1936035156, 641.7590942383] green: [801.9670410156, 473.9911804199, 824.5668334961, 516.1964111328]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the motorcycle (highlighted by a red box), the pedestrian (highlighted by a blue box) or the car (highlighted by a green box)?\n(A) pedestrian\n(B) car\nThe coordinates of bounding boxes are: red: [801.9670410156, 473.9911804199, 824.5668334961, 516.1964111328] blue: [964.3213500977, 478.2882080078, 977.8887939453, 518.2294921875] green: [820.9140625, 481.270111084, 1017.1936035156, 641.7590942383]",
     "answer": "(A)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_40.jpg"
@@ -7190,7 +7190,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the traffic cone (highlighted by a red box), the bus (highlighted by a blue box) or the trailer (highlighted by a green box)?\n(A) bus\n(B) trailer\nThe coordinates of bounding boxes are: red: [1248.0183105469, 450.4851379395, 1313.0029296875, 507.4141540527] blue: [771.7580566406, 421.5141906738, 938.7920532227, 527.3884887695] green: [1494.3251953125, 474.650970459, 1510.3239746094, 522.4201049805]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the traffic cone (highlighted by a red box), the bus (highlighted by a blue box) or the trailer (highlighted by a green box)?\n(A) bus\n(B) trailer\nThe coordinates of bounding boxes are: red: [1494.3251953125, 474.650970459, 1510.3239746094, 522.4201049805] blue: [1248.0183105469, 450.4851379395, 1313.0029296875, 507.4141540527] green: [771.7580566406, 421.5141906738, 938.7920532227, 527.3884887695]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_47.jpg"
@@ -7205,7 +7205,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the traffic cone (highlighted by a red box), the trailer (highlighted by a blue box) or the car (highlighted by a green box)?\n(A) trailer\n(B) car\nThe coordinates of bounding boxes are: red: [754.1901855469, 434.1009521484, 996.135559082, 500.8918151855] blue: [154.3004608154, 486.0162963867, 274.4833679199, 545.8945922852] green: [1161.5338134766, 512.6334838867, 1204.2308349609, 571.5785522461]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the traffic cone (highlighted by a red box), the trailer (highlighted by a blue box) or the car (highlighted by a green box)?\n(A) trailer\n(B) car\nThe coordinates of bounding boxes are: red: [1161.5338134766, 512.6334838867, 1204.2308349609, 571.5785522461] blue: [754.1901855469, 434.1009521484, 996.135559082, 500.8918151855] green: [154.3004608154, 486.0162963867, 274.4833679199, 545.8945922852]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_72.jpg"
@@ -7220,7 +7220,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the bus (highlighted by a red box), the car (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) car\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [509.632232666, 476.988067627, 621.5282592773, 518.5333862305] blue: [1455.1481933594, 427.5596923828, 1540.7733154297, 584.100402832] green: [583.4138183594, 143.2240905762, 1213.5344238281, 841.7176513672]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the bus (highlighted by a red box), the car (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) car\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [583.4138183594, 143.2240905762, 1213.5344238281, 841.7176513672] blue: [509.632232666, 476.988067627, 621.5282592773, 518.5333862305] green: [1455.1481933594, 427.5596923828, 1540.7733154297, 584.100402832]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_83.jpg"
@@ -7235,7 +7235,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the bus (highlighted by a blue box) or the traffic cone (highlighted by a green box)?\n(A) bus\n(B) traffic cone\nThe coordinates of bounding boxes are: red: [1248.0183105469, 450.4851379395, 1313.0029296875, 507.4141540527] blue: [1494.3251953125, 474.650970459, 1510.3239746094, 522.4201049805] green: [725.5090332031, 413.006072998, 874.494934082, 526.8670043945]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the bus (highlighted by a blue box) or the traffic cone (highlighted by a green box)?\n(A) bus\n(B) traffic cone\nThe coordinates of bounding boxes are: red: [725.5090332031, 413.006072998, 874.494934082, 526.8670043945] blue: [1248.0183105469, 450.4851379395, 1313.0029296875, 507.4141540527] green: [1494.3251953125, 474.650970459, 1510.3239746094, 522.4201049805]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_135.jpg"
@@ -7250,7 +7250,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the trailer (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) trailer\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [888.1304931641, 447.7947692871, 957.1016235352, 511.7762145996] blue: [311.4254455566, 477.3817138672, 373.2952270508, 583.5920410156] green: [961.7033691406, 310.1507568359, 1265.1883544922, 585.4671020508]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the trailer (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) trailer\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [961.7033691406, 310.1507568359, 1265.1883544922, 585.4671020508] blue: [888.1304931641, 447.7947692871, 957.1016235352, 511.7762145996] green: [311.4254455566, 477.3817138672, 373.2952270508, 583.5920410156]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_136.jpg"
@@ -7265,7 +7265,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the bus (highlighted by a red box), the trailer (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) trailer\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [783.297668457, 470.0100708008, 806.6979370117, 508.8831481934] blue: [332.9258117676, 451.9300537109, 428.1769714355, 617.5153808594] green: [978.6176757812, 404.6681213379, 1138.6944580078, 554.450378418]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the bus (highlighted by a red box), the trailer (highlighted by a blue box) or the pedestrian (highlighted by a green box)?\n(A) trailer\n(B) pedestrian\nThe coordinates of bounding boxes are: red: [978.6176757812, 404.6681213379, 1138.6944580078, 554.450378418] blue: [783.297668457, 470.0100708008, 806.6979370117, 508.8831481934] green: [332.9258117676, 451.9300537109, 428.1769714355, 617.5153808594]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_137.jpg"
@@ -7280,7 +7280,7 @@
     "subcategory": "Relative",
     "question_type": "multi-choice",
     "input_modality": "single-image",
-    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the trailer (highlighted by a blue box) or the barrier (highlighted by a green box)?\n(A) trailer\n(B) barrier\nThe coordinates of bounding boxes are: red: [487.7799682617, 477.1596069336, 637.8615112305, 524.1094360352] blue: [132.2879638672, 532.4451293945, 318.8897705078, 577.9045410156] green: [1066.2032470703, 469.4702453613, 1218.7993164062, 543.9449462891]",
+    "question": "Estimate the real-world distances between objects in this image. Which object is closer to the truck (highlighted by a red box), the trailer (highlighted by a blue box) or the barrier (highlighted by a green box)?\n(A) trailer\n(B) barrier\nThe coordinates of bounding boxes are: red: [1066.2032470703, 469.4702453613, 1218.7993164062, 543.9449462891] blue: [487.7799682617, 477.1596069336, 637.8615112305, 524.1094360352] green: [132.2879638672, 532.4451293945, 318.8897705078, 577.9045410156]",
     "answer": "(B)",
     "img_paths": [
       "./dataset/CV-Bench/img/3D/distance/omni3d_nuscenes_178.jpg"
