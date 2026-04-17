@@ -1,7 +1,7 @@
-# SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding
+# SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding (CVPR 2026)
 This repository contains the official PyTorch implementation of SpatialScore: https://arxiv.org/abs/2505.17012/.
 
-We have open-sourced our VGBench, SpaitalScore, SpatialScore-Hard, inference code, and expect to gradually open-source the rest of them within 1-2 weeks!
+Our new version paper has been accepted by CVPR 2026, and we are working on updating our up-to-date code and data!
 Please stay tuned! Feel free to reach out for discussions!
 
 <div align="center">
@@ -18,8 +18,9 @@ Current Leaderboard (We will update it regularly, and you are welcome to test yo
 [Project Page](https://haoningwu3639.github.io/SpatialScore/) $\cdot$ [Paper](https://arxiv.org/abs/2505.17012/) $\cdot$ [Dataset](https://huggingface.co/datasets/haoningwu/SpatialScore)
 
 ## News
-- [2025.5] We have released evaluation code, supporting most mainstream models.
-- [2025.5] We have released VGBench, SpatialScore, and SpatialScore-Hard, which are available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
+- [2026.4] Glad to share that **SpatialScore** has been accepted to **CVPR 2026** and selected as **Highlight**.
+- [2025.5] We have released version_0 of our evaluation code, supporting most mainstream models.
+- [2025.5] We have released version_0 of SpatialScore, which is available on [Huggingface](https://huggingface.co/datasets/haoningwu/SpatialScore).
 - [2025.5] Our pre-print paper is released on arXiv.
 
 ## Requirements
@@ -37,7 +38,7 @@ conda activate SpatialScore
 ```
 
 ## Dataset
-Please check out [SpaitalScore](https://huggingface.co/datasets/haoningwu/SpatialScore) to download our proposed benchmark, including `VGBench` and `SpatialScore` (including `SpatialScore-Hard`).
+Please check out [SpaitalScore](https://huggingface.co/datasets/haoningwu/SpatialScore) to download our proposed benchmark (`SpatialScore`).
 
 If you cannot access Huggingface, you can use [hf-mirror](https://hf-mirror.com/) to download models.
 
@@ -53,6 +54,9 @@ unzip SpatialScore.zip
 ```
 
 ## Evaluation
+
+To be updated soon...
+
 Considering the current mainstream model architectures, we have prioritized support for the Qwen2.5VL and InternVL series models. 
 You can evaluate them on SpatialScore using the following commands:
 
@@ -78,21 +82,23 @@ To be updated soon...
 ## Citation
 If you use this code and data for your research or project, please cite:
 
-	@article{wu2025spatialscore,
+	@inproceedings{wu2025spatialscore,
       author    = {Wu, Haoning and Huang, Xiao and Chen, Yaohui and Zhang, Ya and Wang, Yanfeng and Xie, Weidi},
-      title     = {SpatialScore: Towards Unified Evaluation for Multimodal Spatial Understanding},
-      journal   = {arXiv preprint arXiv:2505.17012},
-      year      = {2025},
-    }
+      title     = {SpatialScore: Towards Comprehensive Evaluation for Spatial Intelligence},
+      booktitle = {Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)},
+      year    = {2026},
+}
 
 ## TODO
 - [x] Release Paper
-- [x] Release Dataset (VGBench, SpatialScore, SpatialScore-Hard)
-- [x] Release Code of Evaluation with Qwen2.5VL, InternVL, and all-in-one script
-- [x] Release Base Code of SpatialAgent
-- [ ] Release other parsing utils and functions
-- [ ] Release Inference Code of SpatialAgent
-- [ ] Release Code of Data Construction
+- [x] Update the final version paper
+- [x] Release version_0 SpatialScore Benchmark
+- [x] Release version_0 Code of Evaluation
+- [x] Release version_0 Base Code of SpatialAgent
+- [ ] Release our training resources SpatialCorpurs and the SFT models
+- [ ] Update SpatialScore Benchmark
+- [ ] Update Code of Evaluation
+- [ ] Update Code of SpatialAgent
 
 ## Acknowledgements
 Many thanks to the code bases from [transformers](https://github.com/huggingface/transformers) and [TACO](https://github.com/SalesforceAIResearch/TACO).
