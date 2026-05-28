@@ -107,6 +107,7 @@ def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbna
 # For InternVL, tool functions
 def load_image(image_file, input_size=448, max_num=12):
     image = Image.open(image_file).convert('RGB')
+    
     transform = build_transform(input_size=input_size)
     images = dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
     pixel_values = torch.stack([transform(img) for img in images]).to(torch.float16)
@@ -115,66 +116,50 @@ def load_image(image_file, input_size=448, max_num=12):
 
 # Result Parsing Functions
 def extract_number(text: str) -> str:
-    """Extract a number from text, handling digits and word representations.
-    
+    """Extract a number from text, handling digits and number words.
+    In counting scenarios, the last numeric occurrence is considered final.
+
     Args:
-        text: Input text that may contain a number
-        
+        text: input text that may contain one or more numbers.
+
     Returns:
-        Extracted number as string or original cleaned text
+        Extracted number string or cleaned text.
     """
-    # Handle direct number responses (common in the dataset)
+    import re
+    # Remove assistant markup etc.
+    text = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant|think|/think)>', '', text)
     text = text.strip()
+
+    # Direct numeric
     if text.isdigit():
         return text
-    
-    # Look for the ASSISTANT: pattern at the end of longer responses
-    assistant_match = re.search(r'ASSISTANT:\s*\(?([A-Fa-f])\)?', text)
-    if assistant_match:
-        return assistant_match.group(1).upper()
-    
-    # Normalize and clean the text
-    clean_text = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant)>', '', text).strip()
-    text_lower = clean_text.lower()
-    
-    # First check for conclusion tags with numbers
-    conclusion_match = re.search(r'<conclusion>\s*(\d+)\s*</conclusion>', text, re.IGNORECASE)
-    if conclusion_match:
-        return conclusion_match.group(1)
-    
-    # Dictionary for word-to-digit conversion - expanded
+
+    # Extract all numeric occurrences
+    numbers = re.findall(r'\d+(?:\.\d+)?', text)
+    if numbers:
+        # Return the last one (most likely the final answer)
+        return numbers[-1]
+
+    # Handle number words (one, two, three...)
     word_to_digit = {
-        'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4', 
+        'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
         'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
-        'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13', 
-        'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17', 
-        'eighteen': '18', 'nineteen': '19', 'twenty': '20',
-        'first': '1', 'second': '2', 'third': '3', 'fourth': '4', 'fifth': '5',
-        'sixth': '6', 'seventh': '7', 'eighth': '8', 'ninth': '9', 'tenth': '10'
+        'ten': '10', 'eleven': '11', 'twelve': '12', 'thirteen': '13',
+        'fourteen': '14', 'fifteen': '15', 'sixteen': '16', 'seventeen': '17',
+        'eighteen': '18', 'nineteen': '19', 'twenty': '20'
     }
-    
-    # Try to find numeric digits
-    match = re.search(r'\d+(?:\.\d+)?', text_lower)
-    if match:
-        return match.group(0)
-    
-    # Look for number words in common phrases
-    for word, digit in word_to_digit.items():
-        if (text_lower.startswith(word) or 
-            f" {word} " in text_lower or 
-            f"there are {word}" in text_lower or 
-            f"there is {word}" in text_lower or
-            f"shows {word}" in text_lower or
-            text_lower.endswith(f" {word}")):
-            return digit
-    
-    # Try to find any number word in the text
-    for word, digit in word_to_digit.items():
-        if word in text_lower.split():
-            return digit
-    
-    # Return original cleaned text if no number found
-    return clean_text
+
+    # Convert text to lowercase for matching
+    text_lower = text.lower()
+
+    # Match any word number, choose last occurrence
+    found_words = [word_to_digit[w] for w in word_to_digit if w in text_lower.split()]
+    if found_words:
+        return found_words[-1]
+
+    # Default: return cleaned text if no numeric info found
+    return text.strip()
+
 
 # Result Parsing Functions
 def extract_yes_no(text: str) -> str:
@@ -277,113 +262,182 @@ def extract_option(text: str) -> str:
     
     return clean_text
 
+# Add this helper inside your util (above or inside extract_numeric_with_unit)
+def _collapse_ranges_to_max(text: str) -> str:
+    """
+    Replace numeric ranges like '10-15 cm', '10 ~ 15cm', '10 to 15 meters'
+    with their upper bound: '15 cm' / '15 cm' / '15 meters'.
+    If no unit is captured, we only replace numbers; unit can be borrowed from GT later.
+    """
+    import re
+    # Pattern captures: left value, right value, optional unit after the right value
+    rng = re.compile(r'(-?\d+(?:\.\d+)?)\s*(?:-|–|—|~|to)\s*(-?\d+(?:\.\d+)?)(?:\s*([A-Za-z]+))?', re.IGNORECASE)
+    # Iterate until no more ranges remain (handles multiple ranges in one string)
+    while True:
+        m = rng.search(text)
+        if not m:
+            break
+        try:
+            v1 = float(m.group(1)); v2 = float(m.group(2))
+            vmax = max(v1, v2)
+            unit = m.group(3) or ""   # may be None; keep empty to allow later unit inference
+            replacement = f"{vmax} {unit}".strip()
+            text = text[:m.start()] + replacement + text[m.end():]
+        except Exception:
+            # On any parsing issue, break to avoid infinite loop
+            break
+    return text
+
+
 # Result Parsing Functions
 def extract_numeric_with_unit(pred, gt=None, tolerance=2.0):
-    """Extract numeric value with unit from predicted text and compare with ground truth if provided.
-    
-    Args:
-        pred (str): Input text that may contain a numeric value with unit
-        gt (str, optional): Ground truth string in format "value unit" (e.g., "5 meters")
-        tolerance (float, optional): Ratio tolerance for comparison
-        
-    Returns:
-        dict: Contains extracted value, unit, and comparison result
-    """
-    # Initialize return dictionary
-    result = {"value": None, "unit": None, "is_correct": False}
-    
-    # Clean prediction text of special formatting
-    pred = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant)>', '', pred).strip()
-    
-    # STEP 1: Extract value with multiple patterns
-    # Try formal LaTeX style format first
-    value_match = re.search(r'\\scalar\{([^}]+)\}', pred)
-    
-    # Try markdown bold format (**2.828 meters**)
-    if not value_match:
-        value_match = re.search(r'\*\*([\d.]+)\s*(?:[a-zA-Z]+)\*\*', pred)
-    
-    # Try final value statement format (approximately **2.828 meters**)
-    if not value_match:
-        value_match = re.search(r'(?:approximately|about|roughly)\s*\**([\d.]+)\s*(?:[a-zA-Z]+)\**', pred, re.IGNORECASE)
-    
-    # Try standard formats like "5 meters" or "3.2 cm"
-    if not value_match:
-        value_match = re.search(r'(\d+\.?\d*)\s*(?:[a-zA-Z]+)', pred)
-    
-    # STEP 2: Extract unit with multiple patterns
-    # Try formal LaTeX style format first
-    unit_match = re.search(r'\\distance_unit\{([^}]+)\}', pred)
-    
-    # Try markdown bold format (**2.828 meters**)
-    if not unit_match:
-        unit_match = re.search(r'\*\*\d+\.?\d*\s*([a-zA-Z]+)\*\*', pred)
-    
-    # Try final value statement format (approximately **2.828 meters**)
-    if not unit_match:
-        unit_match = re.search(r'(?:approximately|about|roughly)\s*\**\d+\.?\d*\s*([a-zA-Z]+)\**', pred, re.IGNORECASE)
-    
-    # Try to find unit after a number
-    if not unit_match:
-        number_unit_match = re.search(r'\d+\.?\d*\s*([a-zA-Z]+)', pred)
-        if number_unit_match:
-            unit_match = number_unit_match
+    import re
 
-    # Process extracted value and unit
-    if value_match:
-        try:
-            # Get value from the first matching group
-            result["value"] = float(re.findall(r'\d+\.?\d*', value_match.group(1))[0])
-        except (IndexError, ValueError):
-            pass
+    # ---- 特殊处理：明确拒绝无法测量距离的回答 ----
+    if isinstance(pred, str):
+        if "unable" in pred.lower() and "distance" in pred.lower():
+            return {
+                "value": None, "unit": None, "is_correct": False,
+                "answer_value": None, "answer_unit": None,
+                "gt_value": None, "gt_unit": None
+            }
 
-    if unit_match:
-        try:
-            result["unit"] = unit_match.group(1).lower().strip()
-        except (IndexError, AttributeError):
-            pass
+    # ---- Canonical unit mapping and cm multipliers ----
+    unit_alias = {
+        "m": "meter", "meter": "meter", "metre": "meter", "meters": "meter", "metres": "meter",
+        "cm": "centimeter", "centimeter": "centimeter", "centimeters": "centimeter",
+        "mm": "millimeter", "millimeter": "millimeter", "millimeters": "millimeter",
+        "in": "inch", "inch": "inch", "inches": "inch",
+        "ft": "foot", "feet": "foot", "foot": "foot",
+    }
+    multipliers = {
+        "meter": 100,
+        "centimeter": 1,
+        "millimeter": 0.1,
+        "inch": 2.54,
+        "foot": 30.48,
+        "m": 100, "cm": 1, "mm": 0.1, "in": 2.54, "ft": 30.48,
+    }
 
-    # If ground truth provided, parse it and compare with extracted value
-    if gt is not None and result["value"] is not None and result["unit"] is not None:
-        # Parse ground truth value and unit from the combined string
-        gt_match = re.search(r'(\d+\.?\d*)\s*([a-zA-Z]+)', gt)
-        if gt_match:
+    def canonical_unit(u: str | None) -> str | None:
+        if not u:
+            return None
+        u = u.lower().strip()
+        return unit_alias.get(u, u)
+
+    # ---- Initialize result ----
+    result = {
+        "value": None, "unit": None, "is_correct": False,
+        "answer_value": None, "answer_unit": None,
+        "gt_value": None, "gt_unit": None
+    }
+
+    # ---- Clean general wrappers ----
+    text = str(pred)
+    text = re.sub(r'</?(?:CONCLUSION|conclusion|ANSWER|answer|ASSISTANT|assistant)>', '', text).strip()
+
+    # ---- Ignore think block: only keep the text AFTER "◁/think▷" if present ----
+    end_think_pos = text.rfind("◁/think▷")
+    if end_think_pos != -1:
+        text_to_parse = text[end_think_pos + len("◁/think▷"):]
+    else:
+        text_to_parse = text
+
+    text_to_parse = _collapse_ranges_to_max(text_to_parse)
+
+    # ---- Parse GT ----
+    gt_value_cm, gt_unit_std = None, None
+    if gt is not None:
+        gt = str(gt)
+        m_gt = re.search(r'(-?\d+\.?\d*)\s*([A-Za-z]+)', gt)
+        if m_gt:
             try:
-                gt_value = float(gt_match.group(1))
-                gt_unit = gt_match.group(2).lower().strip()
-                
-                # Handle zero values safely
-                if result["value"] == 0 or gt_value == 0:
-                    # If both are zero, it's correct; if only one is zero, it's wrong
-                    result["is_correct"] = (result["value"] == 0 and gt_value == 0)
-                    return result
-                    
-                # Convert both values to centimeters for comparison
-                multipliers = {
-                    "m": 100, "meter": 100, "meters": 100, "metre": 100, "metres": 100,
-                    "cm": 1, "centimeter": 1, "centimeters": 1, "mm": 0.1,
-                    "ft": 30.48, "foot": 30.48, "feet": 30.48, "in": 2.54, "inch": 2.54, "inches": 2.54
-                }
-                
-                # Get multipliers, defaulting to 1 if unit not found
-                pred_multiplier = multipliers.get(result["unit"], 1)
-                gt_multiplier = multipliers.get(gt_unit, 1)
-                
-                # Convert to common unit (cm)
-                pred_value_cm = result["value"] * pred_multiplier
-                gt_value_cm = gt_value * gt_multiplier
-                
-                # Check if values are within tolerance ratio
-                try:
-                    ratio = max(pred_value_cm / gt_value_cm, gt_value_cm / pred_value_cm)
-                    result["is_correct"] = ratio < tolerance
-                except ZeroDivisionError:
-                    # This shouldn't happen with the earlier check, but just in case
-                    result["is_correct"] = False
-            except (IndexError, ValueError):
+                gt_v = float(m_gt.group(1))
+                gt_u = canonical_unit(m_gt.group(2))
+                mul = multipliers.get(gt_u, 1)
+                gt_value_cm = gt_v * mul
+                gt_unit_std = gt_u if gt_u in multipliers else "centimeter"
+            except Exception:
                 pass
-    
+
+    # ---- Collect candidates ----
+    candidates: list[tuple[float, str]] = []
+
+    scalars = [m.group(1) for m in re.finditer(r'\\scalar\{([^}]+)\}', text_to_parse)]
+    d_units = [m.group(1) for m in re.finditer(r'\\distance_unit\{([^}]+)\}', text_to_parse)]
+    if scalars:
+        try:
+            val = float(re.findall(r'-?\d+\.?\d*', scalars[-1])[0])
+            if d_units:
+                u = canonical_unit(d_units[-1])
+                if u:
+                    candidates.append((val, u))
+        except Exception:
+            pass
+
+    for m in re.finditer(r'(-?\d+(?:\.\d+)?)\s*\\\s*([A-Za-z]+)', text_to_parse):
+        val = float(m.group(1))
+        u = canonical_unit(m.group(2))
+        if u:
+            candidates.append((val, u))
+
+    for m in re.finditer(r'\*\*\s*(-?\d+(?:\.\d+)?)\s*([A-Za-z]+)\s*\*\*', text_to_parse):
+        val = float(m.group(1))
+        u = canonical_unit(m.group(2))
+        if u:
+            candidates.append((val, u))
+
+    unit_token = r'(meters?|metres?|centimeters?|millimeters?|cm|mm|m|inches?|inch|feet|foot|ft)'
+    for m in re.finditer(rf'(-?\d+(?:\.\d+)?)\s*{unit_token}', text_to_parse, flags=re.I):
+        val = float(m.group(1))
+        u = canonical_unit(m.group(2))
+        if u:
+            candidates.append((val, u))
+
+    parsed_value, parsed_unit = None, None
+    if candidates:
+        parsed_value, parsed_unit = candidates[-1]
+    else:
+        # ---- Fallback: number only (borrow unit from GT if available) ----
+        m_num = re.findall(r'-?\d+(?:\.\d+)?', text_to_parse)
+        if m_num:
+            try:
+                parsed_value = float(m_num[-1])
+                if parsed_value <= 0 or parsed_value > 1e4:
+                    parsed_value = None
+                    parsed_unit = None
+                else:
+                    parsed_unit = gt_unit_std if gt_unit_std else None
+            except Exception:
+                parsed_value = None
+                parsed_unit = None
+
+    result["value"] = parsed_value
+    result["unit"] = parsed_unit
+
+    if parsed_value is None or parsed_unit is None:
+        return result
+
+    if gt_value_cm is not None and parsed_value is not None and parsed_unit:
+        pred_cm = parsed_value * multipliers.get(parsed_unit, 1)
+        result["answer_value"] = pred_cm
+        result["answer_unit"] = "centimeter"
+        result["gt_value"] = gt_value_cm
+        result["gt_unit"] = "centimeter"
+
+        if pred_cm == 0 or gt_value_cm == 0:
+            result["is_correct"] = (pred_cm == gt_value_cm)
+        else:
+            try:
+                ratio = max(pred_cm / gt_value_cm, gt_value_cm / pred_cm)
+                result["is_correct"] = (ratio < tolerance)
+            except ZeroDivisionError:
+                result["is_correct"] = False
+
     return result
+
+
+
 
 # Tool function for VSI-Bench
 def abs_dist_norm(pred: float, target: float) -> float:
@@ -398,3 +452,12 @@ def mean_relative_accuracy(pred: float, target: float, start: float, end: float,
     accuracy = abs_dist_norm(pred, target) <= 1 - conf_intervs
     
     return accuracy.mean()
+
+
+def main():
+
+    result=extract_numeric_with_unit("I'm unable to measure precise distances in 3D space from 2D images.","2.5 centimeter")
+    print(result)
+
+if __name__ == "__main__":
+    main()
