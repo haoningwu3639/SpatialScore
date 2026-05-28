@@ -1,0 +1,408 @@
+batch_size: 1
+num_epochs: 100
+eval_interval: 100
+inference_only: False
+exp_dir: "./exps/develop"
+resume: False
+resume_scheduler: False
+use_amp: False
+max_depth: 100
+
+add_cubercnn_for_ap_inference: False
+output_json_file: tab1_9dof
+
+tune_with_prompt: True
+inference_with_prompt: True
+tune_with_depth: True
+inference_with_depth: True
+provide_gt_intrinsics: True
+provide_gt_intrinsics_inference: True
+
+# prompt
+input_point_prompt: False
+inference_with_point_prompt: False
+input_box_prompt: True
+inference_with_box_prompt: True
+random_drop_prompt: True
+random_drop_prompt_prob: 0.7
+random_drop_depth_prompt_prob: 0.7
+
+inference_novel: True
+inference_basic: True
+
+output_rotation_matrix: True
+contain_edge_obj: False
+
+visualize_num: 10
+
+# loss
+loss:
+  loss_list: ['depth_loss', 'intrinsic_loss', '2d_bbox_loss', '3d_bbox_loss', 'chamfer_loss']
+  depth:
+    coefficient: 0.15
+    depth_loss_weight: 10
+  phi:
+    coefficient: 1
+    phi_loss_weight: 2.5
+  theta:
+    coefficient: 1
+    theta_loss_weight: 2.5
+
+unlock_all_backbone: false
+
+# unidepth related parameters
+load_unidepth_ckpt: True
+dino_dim: 1024
+unidepth_path: './checkpoints/unidepth_ckpts/model.pth'
+dino_path: "./checkpoints/dino_ckpts/dinov2_vitl14_pretrain.pth"
+
+# optmizer
+opt: 
+  type: v3
+  learning_rate: 0.00001
+  min_learning_rate: 0.000000001
+  weight_decay: 0.0000001
+  warmup_steps: 1000
+  unidepth_lr: 0.0000001
+  unidepth_weight_decay: 0.000000001
+
+model:
+  type: 'vit_h'
+  checkpoint: './checkpoints/sam_ckpts/sam_vit_h_4b8939.pth'
+  pad: 896
+  image_encoder:
+    img_size: 1024
+    patch_size: 16
+    in_chans: 3
+    embed_dim: 1280
+    depth: 32
+    num_heads: 16
+    mlp_ratio: 4.0
+    out_chans: 256
+    qkv_bias: True
+    norm_layer: nn.LayerNorm
+    act_layer: nn.GELU
+    use_abs_pos: True
+    use_rel_pos: True
+    rel_pos_zero_init: True
+    window_size: 14
+    global_attn_indexes: [7, 15, 23, 31]
+  prompt_encoder:
+  mask_decoder:
+    num_multimask_outputs: 3
+    type: MaskDecoder
+  freeze:
+    image_encoder: False
+    prompt_encoder: False
+    mask_decoder: False
+  
+  additional_adapter: True
+  vit_pad_mask: True
+  original_sam: False
+  multi_level_box_output: 3
+
+dataset:
+  generate_dino_oracle_list: False
+  dino_as_input: False
+  previous_metric: True
+  dino_oracle_input: False
+  zero_shot: True
+  zero_shot_dataset: False
+  clamp_bbox_2d: True
+  perturbation_point_prompt: False
+  perturbation_box_prompt: True
+  perturbation_factor: 0.3
+  num_point_prompts: 1
+  generate_point_prompts_via_mask: True
+  pixel_mean: [123.675, 116.28, 103.53]
+  pixel_std: [58.395, 57.12, 57.375]
+  max_dets: 50
+  hack_img_path: False
+  hack_point_prompt: False
+  hack_box_prompt: False
+  train:
+    # cityscapes:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 1
+    #   metric_scale: 1.
+    #   dataDir: "/cpfs01/shared/opendrivelab/cityscapes3d/leftImg8bit/train"
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/cityscapes3d/cityscapes_train_with_3d_bbox_image_level.pkl'
+
+    # hypersim:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 10
+    #   max_distance: 35
+    #   min_distance: 0.01
+    #   metric_scale: 1.
+    #   pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/Hypersim_train.pkl
+
+    # nuscenes:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 10
+    #   max_distance: 100
+    #   min_distance: 0.1
+    #   metric_scale: 218.45
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/nuscenes/nuscenes_data_train_detany3d_according_to_omni3d.pkl'
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/nuscenes/nuscenes_data_train_detany3d_according_to_omni3d_with_edge_obj.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/nuScenes_train.pkl'
+    #   # pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/nuscenes_train_filtered.pkl
+
+    kitti:
+      range:
+        begin: 0
+        end: -1
+        interval: 1
+      max_distance: 100
+      min_distance: 0.1
+      metric_scale: 1.
+      pkl_path: './data/pkls/omni3d23daw/KITTI_train.pkl'
+    
+    kitti_val:
+      range:
+        begin: 0
+        end: -1
+        interval: 1
+      max_distance: 100
+      min_distance: 0.1
+      metric_scale: 1.
+      pkl_path: './data/pkls/omni3d23daw/KITTI_val.pkl'
+
+    kitti_test:
+      range:
+        begin: 0
+        end: -1
+        interval: 1
+      max_distance: 100
+      min_distance: 0.1
+      metric_scale: 1.
+      pkl_path: './data/pkls/omni3d23daw/KITTI_test.pkl'
+
+    # sunrgbd:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 10
+    #   max_distance: 5
+    #   min_distance: 0.01
+    #   metric_scale: 10000.
+    #   # pkl_path: "/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/sunrgbd/sunrgbd_data_train_detany3d.pkl"
+    #   pkl_path: "/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/SUNRGBD_train.pkl"
+    
+    # objectron:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 10
+    #   max_distance: 10
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/objectron/objectron_data_train_detany3d_only_bbox.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/Objectron_train.pkl'
+
+    # arkitscenes:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 10
+    #   max_distance: 10
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/arkitscenes/arkitscenes_data_train_detany3d.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/ARKitScenes_train.pkl'
+
+    # coco:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 500
+    #   max_distance: 100
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/coco_train.pkl'
+    #   dataDir: './data/coco'
+    #   dataType: 'train2017'
+
+    # taskonomy:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 20
+    #   max_distance: 100
+    #   min_distance: 1
+    #   metric_scale: 512.
+    #   pkl_path: "/cpfs01/shared/opendrivelab/opendrivelab_hdd/taskonomy/taskonomy_right_0904_522762.pkl"
+    
+    # drivingstereo_train:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 2
+    #   max_distance: 100
+    #   min_distance: 1
+    #   metric_scale: 255.
+    #  pkl_path: "/cpfs01/shared/opendrivelab/opendrivelab_hdd/haoran/drivingstereo_new/OpenDataLab___DrivingStereo/drivingstereo_train.pkl"
+
+    # A2D2:
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 0.01
+    #   metric_scale: 218.45
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/other_with_bbox_3d/A2D2_with_box.pkl'
+
+  val:
+    # 3rscan:
+    #   # xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/3RScan_test.pkl'
+    #   pkl_path: ./data/pkls/ovmono3d_novel_gt/3RScan_test_novel.pkl
+    # A2D2:
+    #   range:
+    #     begin: 0
+    #     end: 50
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 0.01
+    #   metric_scale: 218.45
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/other_with_bbox_3d/A2D2_with_box.pkl'
+    # AV2_val:
+    #   range:
+    #     begin: 0
+    #     end: 50
+    #     interval: 5
+    #   max_distance: 80
+    #   min_distance: 1
+    #   metric_scale: 1.
+    #   pkl_path: "/cpfs01/user/zhanghanxue/segment-anything/data/pkls/other_with_bbox_3d/Av2_val_front_with_bbox.pkl"
+    # cityscapes:
+    #   xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 1
+    #   metric_scale: 1.
+    #   dataDir: "/cpfs01/shared/opendrivelab/cityscapes3d/leftImg8bit/test"
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/Cityscapes3D_test.pkl'
+    # waymo:
+    #   # xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 1
+    #   metric_scale: 1.
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/other_with_bbox_3d/waymo_data_val.pkl'
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/Waymo_test.pkl'
+    #   pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/ovmono3d_novel_gt/Waymo_test.pkl
+    # coco:
+    #   range:
+    #     begin: 0
+    #     end: 200
+    #     interval: 10
+    #   max_distance: 100
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/coco_val.pkl'
+    #   dataDir: './data/coco'
+    #   dataType: 'val2017'
+    # kitti:
+    #   # xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 100
+    #   min_distance: 0.1
+    #   metric_scale: 1.
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/kitti/kitti_data_val_detany3d_no_occlusion_v3.pkl'
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/kitti/kitti_data_test_detany3d_according_to_omni3d_output.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/KITTI_test.pkl'
+    #   # pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/ovmono3d_novel_gt/KITTI_test_novel.pkl
+      
+    nuscenes:
+      # xywl_mode: True
+      range:
+        begin: 0
+        end: -1
+        interval: 1
+      max_distance: 100
+      min_distance: 0.1
+      metric_scale: 218.45
+      # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/nuscenes/nuscenes_data_test_detany3d_according_to_omni3d.pkl'
+      # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/nuScenes_test.pkl'
+      pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/nuscenes_test_filtered.pkl'
+
+
+
+    # sunrgbd:
+    #   xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 5
+    #   min_distance: 0.01
+    #   metric_scale: 10000.
+    #   # pkl_path: "/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/sunrgbd/sunrgbd_data_test_detany3d.pkl"
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/sunrgbd/sunrgbd_data_test_detany3d_omni3d_output.pkl'
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/SUNRGBD_test.pkl'
+    #   pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/ovmono3d_novel_gt/SUNRGBD_test_novel.pkl
+
+    # objectron:
+    #   xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 5
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/objectron/objectron_data_test_detany3d_only_bbox.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/Objectron_test.pkl'
+
+    # hypersim:
+    #   xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 35
+    #   min_distance: 0.01
+    #   metric_scale: 1.
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/hypersim/hypersim_data_test_detany3d.pkl'
+    #   pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/Hypersim_test.pkl'
+
+    # arkitscenes:
+    #   # xywl_mode: True
+    #   range:
+    #     begin: 0
+    #     end: -1
+    #     interval: 1
+    #   max_distance: 5
+    #   min_distance: 0.01
+    #   metric_scale: 1
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/arkitscenes/arkitscenes_data_test_detany3d.pkl'
+    #   # pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/cubercnn2dpred/ARKitScenes_test.pkl
+    #   # pkl_path: '/cpfs01/shared/opendrivelab/zhanghanxue/DetAny3D/data/arkitscenes/arkitscenes_data_test_detany3d_with_edge_obj.pkl'
+    #   # pkl_path: '/cpfs01/user/zhanghanxue/segment-anything/data/pkls/omni3d23daw/ARKitScenes_test.pkl'
+    #   # pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/ovmono3d_novel_gt/ARKitScenes_test_novel.pkl
+    #   pkl_path: /cpfs01/user/zhanghanxue/segment-anything/data/pkls/ovmono3d_novel_gt/ARKitScenes_test_novel.pkl
